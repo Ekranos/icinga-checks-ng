@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "check_dns_ng",
+    "check_http_ng",
+]
+
+[profile.release]
+lto = true
+opt-level = "z"
