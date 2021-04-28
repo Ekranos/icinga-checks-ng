@@ -1,6 +1,6 @@
 # icinga-checks-ng
 
-Just some icinga checks I had or wanted to build or rebuild. I try to
+Just some icinga checks I had to or wanted to build or rebuild. I try to
 stay compatible with older versions of these, but use at your own risk.
 
 Also there are basically no docs except the help messages.
