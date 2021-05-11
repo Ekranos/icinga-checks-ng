@@ -27,8 +27,14 @@ struct Opts {
     #[structopt(long = "basic-auth-pass")]
     basic_auth_pass: Option<String>,
 
+    /// Expect the given string literal to be included in the response.
     #[structopt(long = "expect-string")]
     expected_string: Option<String>,
+
+    /// If defined it will be an "ok" service state if a connection error occurs. It will be the
+    /// given state if no error occurs.
+    #[structopt(long = "expect-error")]
+    expect_error: Option<ServiceState>,
 }
 
 fn main() {
@@ -58,7 +64,30 @@ async fn check_http_ng(opts: Opts) -> Result<Resource, Box<dyn Error>> {
         req_builder = req_builder.basic_auth(user, opts.basic_auth_pass);
     }
 
-    let resp = client.execute(req_builder.build()?).await?;
+    let resp = match client.execute(req_builder.build()?).await {
+        Ok(r) => match opts.expect_error {
+            Some(state) => {
+                res.push_result(
+                    CheckResult::new()
+                        .with_state(state)
+                        .with_message("expected service to be errorneous, but it is not"),
+                );
+                r
+            }
+            None => r,
+        },
+        Err(e) => match opts.expect_error {
+            Some(_) => {
+                return Ok(res
+                    .with_fixed_state(ServiceState::Ok)
+                    .with_description("Expected service to be errorneous and it is"));
+            }
+            None => {
+                Err(e)?;
+                unreachable!()
+            }
+        },
+    };
 
     let status = resp.status().as_u16();
     let bytes = resp.bytes().await?;
