@@ -4,7 +4,7 @@ use nagiosplugin::{CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "basic")]
+#[structopt(author)]
 struct Opts {
     #[structopt(short = "u", long = "url")]
     url: String,

@@ -2,6 +2,7 @@
 members = [
     "check_dns_ng",
     "check_http_ng",
+    "check_ssl_ng",
 ]
 
 [profile.release]

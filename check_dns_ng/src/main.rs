@@ -74,6 +74,7 @@ fn create_client(
 /// Built cause of the lack of reliably choosing between TCP and UDP for the connection
 /// by check_dns and check_dig.
 #[derive(Debug, Clone, StructOpt)]
+#[structopt(author)]
 struct Opts {
     /// The DNS server to use
     #[structopt(short, default_value = "127.0.0.1:53")]
