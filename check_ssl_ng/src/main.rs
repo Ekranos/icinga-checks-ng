@@ -1,41 +1,40 @@
 use anyhow::Context;
 use chrono::{Local, NaiveDateTime};
+use clap::Parser;
 use nagiosplugin::{CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use std::net::{TcpStream, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use structopt::StructOpt;
 
-#[derive(StructOpt)]
-#[structopt(author)]
+#[derive(Parser)]
 struct Opts {
     /// The address to connect to. Example: example.com:443
-    #[structopt(long)]
+    #[clap(long)]
     address: String,
 
     /// The domain to request the certificate from. Example: example.com
-    #[structopt(long)]
+    #[clap(long)]
     domain: String,
 
     /// Time in days until expiry to report a warning
-    #[structopt(long, default_value = "30")]
+    #[clap(long, default_value = "30")]
     warning: u64,
 
     /// Time in days until expiry to report a critical
-    #[structopt(long, default_value = "14")]
+    #[clap(long, default_value = "14")]
     critical: u64,
 
     /// Service state to emit if the certificate is not valid yet
-    #[structopt(long, default_value = "critical")]
+    #[clap(long, default_value = "critical")]
     not_before_state: ServiceState,
 
     /// If set, the check will expect the address to not respond and will issue the given state if it does respond
-    #[structopt(long)]
+    #[clap(long)]
     expect_error: Option<ServiceState>,
 
     /// The timeout in milliseconds
-    #[structopt(long, default_value = "15000")]
+    #[clap(long, default_value = "15000")]
     timeout: u64,
 }
 
@@ -47,7 +46,7 @@ struct CertificateInfo {
 }
 
 fn main() {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
 
     nagiosplugin::Runner::new()
         .safe_run(|| do_check(&opts))

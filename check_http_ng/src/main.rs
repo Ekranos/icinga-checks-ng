@@ -1,44 +1,43 @@
 use std::error::Error;
 
+use clap::Parser;
 use nagiosplugin::{CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
-use structopt::StructOpt;
 
-#[derive(StructOpt, Debug)]
-#[structopt(author)]
+#[derive(Parser, Debug)]
 struct Opts {
-    #[structopt(short = "u", long = "url")]
+    #[clap(short = 'u', long = "url")]
     url: String,
 
-    #[structopt(short = "w", long = "warning-timeout", default_value = "15000")]
+    #[clap(short = 'w', long = "warning-timeout", default_value = "15000")]
     warning: u64,
 
-    #[structopt(short = "c", long = "critical-timeout", default_value = "30000")]
+    #[clap(short = 'c', long = "critical-timeout", default_value = "30000")]
     critical: u64,
 
-    #[structopt(short = "s", long = "expect-status", default_value = "200")]
+    #[clap(short = 's', long = "expect-status", default_value = "200")]
     status: u16,
 
-    #[structopt(long = "accept-invalid-certs")]
+    #[clap(long = "accept-invalid-certs")]
     accept_invalid_certs: bool,
 
-    #[structopt(long = "basic-auth-user")]
+    #[clap(long = "basic-auth-user")]
     basic_auth_user: Option<String>,
 
-    #[structopt(long = "basic-auth-pass")]
+    #[clap(long = "basic-auth-pass")]
     basic_auth_pass: Option<String>,
 
     /// Expect the given string literal to be included in the response.
-    #[structopt(long = "expect-string")]
+    #[clap(long = "expect-string")]
     expected_string: Option<String>,
 
     /// If defined it will be an "ok" service state if a connection error occurs. It will be the
     /// given state if no error occurs.
-    #[structopt(long = "expect-error")]
+    #[clap(long = "expect-error")]
     expect_error: Option<ServiceState>,
 }
 
 fn main() {
-    let opts: Opts = Opts::from_args();
+    let opts: Opts = Opts::parse();
 
     let rt = tokio::runtime::Builder::new_current_thread()
         .enable_all()

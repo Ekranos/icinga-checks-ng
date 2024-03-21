@@ -1,10 +1,19 @@
 [workspace]
-members = [
-    "check_dns_ng",
-    "check_http_ng",
-    "check_ssl_ng",
-]
+members = ["check_dns_ng", "check_http_ng", "check_ssl_ng"]
+resolver = "2"
+
+[workspace.dependencies]
+anyhow = "1"
+chrono = "0.4"
+clap = { version = "4.5", features = ["derive"] }
+futures = "0.3"
+nagiosplugin = "0.6"
+openssl = { version = "0.10", features = ["vendored"] }
+reqwest = "0.12"
+tokio = "1"
 
 [profile.release]
+debug = false
+strip = true
 lto = true
 opt-level = "z"
