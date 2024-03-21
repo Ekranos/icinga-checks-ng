@@ -1,5 +1,4 @@
-use std::error::Error;
-
+use anyhow::Context;
 use clap::Parser;
 use nagiosplugin::{CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
 
@@ -34,6 +33,10 @@ struct Opts {
     /// given state if no error occurs.
     #[clap(long = "expect-error")]
     expect_error: Option<ServiceState>,
+
+    /// If defined, the request will be proxied through the given URL.
+    #[clap(long)]
+    proxy: Option<String>,
 }
 
 fn main() {
@@ -49,21 +52,32 @@ fn main() {
         .print_and_exit();
 }
 
-async fn check_http_ng(opts: Opts) -> Result<Resource, Box<dyn Error>> {
+async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
     let mut res = Resource::new("HTTP");
 
-    let client = reqwest::ClientBuilder::new()
-        .redirect(reqwest::redirect::Policy::none())
-        .danger_accept_invalid_certs(opts.accept_invalid_certs)
-        .build()?;
+    let client = {
+        let mut builder = reqwest::ClientBuilder::new()
+            .redirect(reqwest::redirect::Policy::none())
+            .danger_accept_invalid_certs(opts.accept_invalid_certs);
+
+        if let Some(proxy) = opts.proxy {
+            builder = builder.proxy(reqwest::Proxy::all(proxy).context("failed to set proxy")?)
+        }
+
+        builder.build().context("failed to create client")?
+    };
+
     let start = chrono::Utc::now();
 
-    let mut req_builder = client.get(&opts.url);
-    if let Some(user) = opts.basic_auth_user {
-        req_builder = req_builder.basic_auth(user, opts.basic_auth_pass);
-    }
+    let req = {
+        let mut builder = client.get(&opts.url);
+        if let Some(user) = opts.basic_auth_user {
+            builder = builder.basic_auth(user, opts.basic_auth_pass);
+        }
+        builder.build().context("failed to build request")?
+    };
 
-    let resp = match client.execute(req_builder.build()?).await {
+    let resp = match client.execute(req).await {
         Ok(r) => match opts.expect_error {
             Some(state) => {
                 res.push_result(
@@ -81,10 +95,7 @@ async fn check_http_ng(opts: Opts) -> Result<Resource, Box<dyn Error>> {
                     .with_fixed_state(ServiceState::Ok)
                     .with_description("Expected service to be errorneous and it is"));
             }
-            None => {
-                Err(e)?;
-                unreachable!()
-            }
+            None => anyhow::bail!("failed to execute request: {}", e),
         },
     };
 

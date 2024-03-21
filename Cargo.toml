@@ -9,7 +9,12 @@ clap = { version = "4.5", features = ["derive"] }
 futures = "0.3"
 nagiosplugin = "0.6"
 openssl = { version = "0.10", features = ["vendored"] }
-reqwest = "0.12"
+reqwest = { version = "0.12", default-features = false, features = [
+    "rustls-tls",
+    "rustls-tls-native-roots",
+    "http2",
+    "h3",
+] }
 tokio = "1"
 
 [profile.release]
