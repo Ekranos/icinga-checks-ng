@@ -175,7 +175,6 @@ name = "check_http_ng"
 version = "0.3.0"
 dependencies = [
  "anyhow",
- "chrono",
  "clap",
  "futures",
  "nagiosplugin",

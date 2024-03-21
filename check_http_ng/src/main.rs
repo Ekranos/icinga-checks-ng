@@ -67,7 +67,7 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
         builder.build().context("failed to create client")?
     };
 
-    let start = chrono::Utc::now();
+    let start = std::time::Instant::now();
 
     let req = {
         let mut builder = client.get(&opts.url);
@@ -116,11 +116,10 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
     let byte_count = bytes.len();
     res.push_result(Metric::new("size", byte_count));
 
-    let end = chrono::Utc::now();
-    let took = end - start;
+    let elapsed = start.elapsed();
 
     res.push_result(
-        Metric::new("time", took.num_milliseconds() as u64)
+        Metric::new("time", elapsed.as_millis() as u64)
             .with_thresholds(opts.warning, opts.critical, TriggerIfValue::Greater)
             .with_minimum(0),
     );
@@ -137,10 +136,8 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
     };
 
     res.set_description(format!(
-        "Status Code {} - Received {} bytes in {} milliseconds",
-        status,
-        byte_count,
-        took.num_milliseconds()
+        "Status Code {} - Received {} bytes in {:?}",
+        status, byte_count, elapsed
     ));
 
     Ok(res)
