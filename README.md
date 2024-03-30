@@ -5,15 +5,6 @@ stay compatible with older versions of these, but use at your own risk.
 
 Also there are basically no docs except the help messages.
 
-# Build
-
-Install Rust and Cargo.
-
-    # Build for your current platform
-    cargo build --release
-    # or to build statically linked binaries for Linux via musl
-    just build-linux
-
 # License
 
 This project is licensed under either of
