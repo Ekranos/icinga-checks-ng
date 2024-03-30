@@ -3,6 +3,13 @@ name = "check_ssl_ng"
 version = "0.1.0"
 authors = ["Marvin Lee Fimmel <kontakt@ekranos.me>"]
 edition = "2021"
+repository = "https://github.com/Ekranos/icinga-checks-ng"
+
+[package.metadata.wix]
+upgrade-guid = "AB709863-D551-477F-988E-DAC8BBFADE6A"
+path-guid = "CDA60FA8-2BA6-4FA7-B0F0-32FD935133E2"
+license = false
+eula = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

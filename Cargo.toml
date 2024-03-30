@@ -18,8 +18,28 @@ reqwest = { version = "0.12", default-features = false, features = [
 ] }
 tokio = "1"
 
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.12.0"
+# CI backends to support
+ci = ["github"]
+# The installers to generate for each app
+installers = ["shell", "powershell", "msi"]
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["x86_64-unknown-linux-musl", "x86_64-pc-windows-msvc"]
+# Publish jobs to run in CI
+pr-run-mode = "skip"
+# Whether to install an updater program
+install-updater = false
+
 [profile.release]
 debug = false
 strip = true
 lto = true
 opt-level = "z"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

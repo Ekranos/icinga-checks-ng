@@ -3,6 +3,13 @@ name = "check_http_ng"
 version = "0.3.0"
 authors = ["Marvin Lee Fimmel <kontakt@ekranos.me>"]
 edition = "2021"
+repository = "https://github.com/Ekranos/icinga-checks-ng"
+
+[package.metadata.wix]
+upgrade-guid = "931FB4EA-B5C5-4A50-9DFC-E09FC6CF1BA1"
+path-guid = "323CCB27-F583-4F23-85C4-303B45972B6D"
+license = false
+eula = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

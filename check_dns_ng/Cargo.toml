@@ -3,6 +3,13 @@ name = "check_dns_ng"
 version = "0.1.4"
 authors = ["Marvin Lee Fimmel <kontakt@ekranos.me>"]
 edition = "2021"
+repository = "https://github.com/Ekranos/icinga-checks-ng"
+
+[package.metadata.wix]
+upgrade-guid = "B7D17526-026C-4366-8664-0DFE4E5F4578"
+path-guid = "A99571FA-D729-4B83-BDF0-B6C10602F000"
+license = false
+eula = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
