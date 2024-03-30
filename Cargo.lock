@@ -162,7 +162,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "check_dns_ng"
-version = "0.1.4"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -172,7 +172,7 @@ dependencies = [
 
 [[package]]
 name = "check_http_ng"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -185,7 +185,7 @@ dependencies = [
 
 [[package]]
 name = "check_ssl_ng"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "chrono",
