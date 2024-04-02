@@ -37,6 +37,14 @@ struct Opts {
     /// If defined, the request will be proxied through the given URL.
     #[clap(long)]
     proxy: Option<String>,
+
+    /// Proxy http authentication user
+    #[clap(long)]
+    proxy_user: Option<String>,
+
+    /// Proxy http authentication password
+    #[clap(long)]
+    proxy_pass: Option<String>,
 }
 
 fn main() {
@@ -62,7 +70,13 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
             .danger_accept_invalid_certs(opts.accept_invalid_certs);
 
         if let Some(proxy) = opts.proxy {
-            builder = builder.proxy(reqwest::Proxy::all(proxy).context("failed to set proxy")?)
+            let mut proxy = reqwest::Proxy::all(proxy).context("failed to set proxy")?;
+
+            if let (Some(user), Some(pass)) = (opts.proxy_user, opts.proxy_pass) {
+                proxy = proxy.basic_auth(&user, &pass);
+            }
+
+            builder = builder.proxy(proxy);
         }
 
         builder.build().context("failed to create client")?
