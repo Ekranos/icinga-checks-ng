@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{anyhow, Context};
 use clap::Parser;
-use nagiosplugin::{CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
+use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
 use trust_dns_client::client::{Client, ClientConnection, SyncClient};
 use trust_dns_client::op::DnsResponse;
 use trust_dns_client::rr::{DNSClass, Name, RecordType};
@@ -108,9 +108,7 @@ struct Opts {
 fn main() {
     let opts: Opts = Opts::parse();
 
-    nagiosplugin::Runner::new()
-        .safe_run(|| check_dns_ng(opts))
-        .print_and_exit();
+    safe_run(|| check_dns_ng(opts), ServiceState::Unknown).print_and_exit();
 }
 
 fn check_dns_ng(opts: Opts) -> Result<Resource, Box<dyn Error>> {

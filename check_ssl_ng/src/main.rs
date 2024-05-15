@@ -1,7 +1,7 @@
 use anyhow::Context;
 use chrono::{Local, NaiveDateTime};
 use clap::Parser;
-use nagiosplugin::{CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
+use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
 use openssl::ssl::{SslConnector, SslMethod, SslVerifyMode};
 use std::net::{TcpStream, ToSocketAddrs};
 use std::sync::{Arc, Mutex};
@@ -48,9 +48,7 @@ struct CertificateInfo {
 fn main() {
     let opts = Opts::parse();
 
-    nagiosplugin::Runner::new()
-        .safe_run(|| do_check(&opts))
-        .print_and_exit();
+    safe_run(|| do_check(&opts), ServiceState::Unknown).print_and_exit();
 }
 
 fn do_check(opts: &Opts) -> anyhow::Result<Resource> {

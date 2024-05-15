@@ -1,6 +1,6 @@
 use anyhow::Context;
 use clap::Parser;
-use nagiosplugin::{CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
+use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
 
 #[derive(Parser, Debug)]
 struct Opts {
@@ -56,9 +56,7 @@ fn main() {
         .build()
         .unwrap();
 
-    nagiosplugin::Runner::new()
-        .safe_run(|| rt.block_on(check_http_ng(opts)))
-        .print_and_exit();
+    safe_run(|| rt.block_on(check_http_ng(opts)), ServiceState::Unknown).print_and_exit();
 }
 
 async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
