@@ -69,6 +69,7 @@
 
         <Package Id='*'
             Keywords='Installer'
+            Description='Icinga / Nagios plugin to check HTTP(S) services'
             Manufacturer='Marvin Lee Fimmel'
             InstallerVersion='450'
             Languages='1033'
