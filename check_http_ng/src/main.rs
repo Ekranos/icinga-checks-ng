@@ -6,6 +6,7 @@ use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, Trigge
 use regex::Regex;
 
 #[derive(Parser, Debug)]
+#[clap(about, version)]
 struct Opts {
     #[clap(short = 'u', long = "url")]
     url: String,
@@ -32,14 +33,16 @@ struct Opts {
     #[clap(long = "expect-string")]
     expected_string: Option<String>,
 
-    /// Expect the given regex to match against the response. Format: <state>:<regex>
-    #[clap(long = "expect-regex")]
-    expected_regex: Vec<ExpectRegex>,
-
     /// If defined it will be an "ok" service state if a connection error occurs. It will be the
     /// given state if no error occurs.
     #[clap(long = "expect-error")]
     expect_error: Option<ServiceState>,
+
+    /// Expect the given regex to match against the response and set the state accordingly.
+    /// Prefix the state with a '!' to reverse the match.
+    /// Format: <state>:<regex>
+    #[clap(long = "regex-match")]
+    regex_match: Vec<RegexMatch>,
 
     /// If defined, the request will be proxied through the given URL.
     #[clap(long)]
@@ -65,12 +68,13 @@ enum ExpectRegexParseError {
 }
 
 #[derive(Debug, Clone)]
-struct ExpectRegex {
+struct RegexMatch {
+    reverse: bool,
     state: ServiceState,
     regex: Regex,
 }
 
-impl FromStr for ExpectRegex {
+impl FromStr for RegexMatch {
     type Err = ExpectRegexParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -78,10 +82,20 @@ impl FromStr for ExpectRegex {
             .split_once(':')
             .ok_or(ExpectRegexParseError::InvalidFormat)?;
 
+        let (state, reverse) = if state.starts_with('!') {
+            (&state[1..], true)
+        } else {
+            (state, false)
+        };
+
         let state = state.parse()?;
         let regex = Regex::new(regex)?;
 
-        Ok(ExpectRegex { state, regex })
+        Ok(RegexMatch {
+            reverse,
+            state,
+            regex,
+        })
     }
 }
 
@@ -164,15 +178,15 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
         }
     }
 
-    for expected_regex in &opts.expected_regex {
+    for regex_match in &opts.regex_match {
         let response_body = String::from_utf8_lossy(bytes.as_ref());
-        if !expected_regex.regex.is_match(&response_body) {
+        if regex_match.regex.is_match(&response_body) && !regex_match.reverse {
             res.push_result(
                 CheckResult::new()
-                    .with_state(expected_regex.state)
+                    .with_state(regex_match.state)
                     .with_message(format!(
-                        "unable to find regex match for regex: '{}'",
-                        expected_regex.regex
+                        "regex '{}' matches body for state '{}'",
+                        regex_match.regex, regex_match.state
                     )),
             );
         }
