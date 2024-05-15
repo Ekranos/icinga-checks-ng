@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::Context;
 use clap::Parser;
 use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
@@ -30,6 +32,10 @@ struct Opts {
     #[clap(long = "expect-string")]
     expected_string: Option<String>,
 
+    /// Expect the given regex to match against the response. Format: <state>:<regex>
+    #[clap(long = "expect-regex")]
+    expected_regex: Vec<ExpectRegex>,
+
     /// If defined it will be an "ok" service state if a connection error occurs. It will be the
     /// given state if no error occurs.
     #[clap(long = "expect-error")]
@@ -46,6 +52,37 @@ struct Opts {
     /// Proxy http authentication password
     #[clap(long)]
     proxy_pass: Option<String>,
+}
+
+#[derive(thiserror::Error, Debug)]
+enum ExpectRegexParseError {
+    #[error("invalid format, expected <state>:<regex>")]
+    InvalidFormat,
+    #[error("failed to parse state: {0}")]
+    StateParseError(#[from] nagiosplugin::ServiceStateFromStrError),
+    #[error("failed to parse regex: {0}")]
+    RegexParseError(#[from] regex::Error),
+}
+
+#[derive(Debug, Clone)]
+struct ExpectRegex {
+    state: ServiceState,
+    regex: Regex,
+}
+
+impl FromStr for ExpectRegex {
+    type Err = ExpectRegexParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (state, regex) = s
+            .split_once(':')
+            .ok_or(ExpectRegexParseError::InvalidFormat)?;
+
+        let state = state.parse()?;
+        let regex = Regex::new(regex)?;
+
+        Ok(ExpectRegex { state, regex })
+    }
 }
 
 fn main() {
@@ -123,6 +160,20 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
                 CheckResult::new()
                     .with_state(ServiceState::Critical)
                     .with_message(format!("Unable to find string \"{}\"", expected_string)),
+            );
+        }
+    }
+
+    for expected_regex in &opts.expected_regex {
+        let response_body = String::from_utf8_lossy(bytes.as_ref());
+        if !expected_regex.regex.is_match(&response_body) {
+            res.push_result(
+                CheckResult::new()
+                    .with_state(expected_regex.state)
+                    .with_message(format!(
+                        "unable to find regex match for regex: '{}'",
+                        expected_regex.regex
+                    )),
             );
         }
     }

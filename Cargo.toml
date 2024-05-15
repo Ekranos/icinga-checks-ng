@@ -9,6 +9,7 @@ clap = { version = "4.5", features = ["derive"] }
 futures = "0.3"
 nagiosplugin = "0.7"
 openssl = { version = "0.10", features = ["vendored"] }
+regex = "1.10.4"
 reqwest = { version = "0.12", default-features = false, features = [
     "rustls-tls",
     "rustls-tls-native-roots",
@@ -16,6 +17,7 @@ reqwest = { version = "0.12", default-features = false, features = [
     "h3",
     "socks",
 ] }
+thiserror = "1.0.60"
 tokio = "1"
 
 # Config for 'cargo dist'
