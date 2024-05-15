@@ -1,6 +1,7 @@
 use anyhow::Context;
 use clap::Parser;
 use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
+use regex::Regex;
 
 #[derive(Parser, Debug)]
 struct Opts {
