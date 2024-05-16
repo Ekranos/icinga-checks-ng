@@ -1,9 +1,13 @@
 [package]
 name = "check_ssl_ng"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Marvin Lee Fimmel <kontakt@ekranos.me>"]
 edition = "2021"
 repository = "https://github.com/Ekranos/icinga-checks-ng"
+
+[features]
+default = ["vendored-openssl"]
+vendored-openssl = ["openssl/vendored"]
 
 [package.metadata.wix]
 upgrade-guid = "AB709863-D551-477F-988E-DAC8BBFADE6A"
