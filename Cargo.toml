@@ -17,8 +17,10 @@ reqwest = { version = "0.12", default-features = false, features = [
     "h3",
     "socks",
 ] }
+tempfile = "3.10.1"
 thiserror = "1.0.60"
 tokio = "1"
+tracing-subscriber = "0.3.18"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
