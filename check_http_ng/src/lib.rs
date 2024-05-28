@@ -41,15 +41,15 @@ pub struct Opts {
     pub proxy_basic_pass: Option<String>,
 
     /// The maximum time the request is allowed to take
-    #[clap(long = "timeout", default_value = "60000")]
+    #[clap(long = "timeout", default_value = "60s")]
     pub timeout: Duration,
 
     /// The warning timeout
-    #[clap(long = "timeout-warning", default_value = "15000")]
+    #[clap(long = "timeout-warning", default_value = "15s")]
     pub timeout_warning: Duration,
 
     /// The critical timeout
-    #[clap(long = "timeout-critical", default_value = "30000")]
+    #[clap(long = "timeout-critical", default_value = "30s")]
     pub timeout_critical: Duration,
 
     /// The expected HTTP status code
