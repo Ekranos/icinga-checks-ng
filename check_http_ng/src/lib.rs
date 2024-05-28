@@ -165,7 +165,7 @@ pub struct BackendData {
 pub enum BackendFetchError {
     #[error("not reachable")]
     NotReachable,
-    #[error("failed to fetch: {0}")]
+    #[error("{0}")]
     Other(#[from] anyhow::Error),
 }
 
@@ -236,11 +236,27 @@ mod backend_curl {
 
         cmd.arg(&opts.url);
 
+        tracing::debug!("executing curl: {:?}", cmd);
+
         let output = cmd.output().context("failed to execute curl")?;
 
-        let output = String::from_utf8_lossy(&output.stderr);
-        let output: CurlOutput = serde_json::from_str(&output)
-            .with_context(|| format!("failed to parse curl output: {output}"))?;
+        tracing::debug!("curl stdout: {}", String::from_utf8_lossy(&output.stdout));
+        tracing::debug!("curl stderr: {}", String::from_utf8_lossy(&output.stderr));
+
+        let output = String::from_utf8_lossy(&output.stdout);
+        let output: CurlOutput =
+            serde_json::from_str(&output).context("failed to parse curl output")?;
+
+        if let Some(error_message) = &output.error_message {
+            if error_message.contains("Timeout was reached")
+                || error_message.contains("Connection time-out")
+                || error_message.contains("SSL connection timeout")
+            {
+                return Err(BackendFetchError::NotReachable);
+            } else {
+                return Err(anyhow::anyhow!("curl error: {}", error_message).into());
+            }
+        }
 
         let body =
             std::fs::read(file.path()).context("failed to read curl temporary output file")?;
@@ -285,10 +301,21 @@ mod backend_reqwest {
         };
 
         let start = std::time::Instant::now();
-        let resp = client
-            .execute(req)
-            .await
-            .context("failed to execute request")?;
+        let resp = client.execute(req).await;
+
+        let resp = match resp {
+            Ok(resp) => resp,
+            Err(err) => {
+                if err.is_timeout() {
+                    return Err(BackendFetchError::NotReachable);
+                } else {
+                    return Err(BackendFetchError::Other(
+                        anyhow::anyhow!(err).context("failed to execute request"),
+                    ));
+                }
+            }
+        };
+
         let time = start.elapsed();
 
         Ok(BackendData {

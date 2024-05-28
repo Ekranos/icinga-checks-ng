@@ -1,6 +1,7 @@
 use anyhow::Context;
 use check_http_ng::{BackendFetchError, BackendResult, Opts};
 use clap::Parser;
+use futures::TryFutureExt;
 use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
 
 fn main() {
@@ -12,7 +13,11 @@ fn main() {
         .build()
         .unwrap();
 
-    safe_run(|| rt.block_on(check_http_ng(opts)), ServiceState::Unknown).print_and_exit();
+    safe_run(
+        || rt.block_on(check_http_ng(opts).map_err(|e| format!("{:?}", e))),
+        ServiceState::Unknown,
+    )
+    .print_and_exit();
 }
 
 async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
