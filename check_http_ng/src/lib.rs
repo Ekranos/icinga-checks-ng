@@ -316,12 +316,10 @@ mod backend_reqwest {
             }
         };
 
+        let status = resp.status().as_u16();
+        let body = resp.bytes().await.context("failed to read body")?.to_vec();
         let time = start.elapsed();
 
-        Ok(BackendData {
-            status: resp.status().as_u16(),
-            body: resp.bytes().await.context("failed to read body")?.to_vec(),
-            time,
-        })
+        Ok(BackendData { status, body, time })
     }
 }
