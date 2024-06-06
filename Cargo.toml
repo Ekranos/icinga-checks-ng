@@ -6,7 +6,9 @@ resolver = "2"
 anyhow = "1"
 chrono = "0.4"
 clap = { version = "4.5", features = ["derive"] }
+derive_more = "0.99.17"
 futures = "0.3"
+humanize-rs = "0.1.5"
 nagiosplugin = "0.7"
 openssl = { version = "0.10" }
 regex = "1.10.4"
@@ -17,8 +19,13 @@ reqwest = { version = "0.12", default-features = false, features = [
     "h3",
     "socks",
 ] }
+serde = "1.0.203"
+serde_json = "1.0.117"
+tempfile = "3.10.1"
 thiserror = "1.0.60"
 tokio = "1"
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
