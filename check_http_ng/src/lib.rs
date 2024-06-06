@@ -64,6 +64,10 @@ pub struct Opts {
     #[clap(long = "on-error")]
     pub on_error: Option<ServiceState>,
 
+    /// If defined and the request is successful, the state will be set to the given state
+    #[clap(long = "on-success")]
+    pub on_success: Option<ServiceState>,
+
     /// Expect the given regex to match against the response and set the state accordingly.
     /// Prefix the state with a '!' to reverse the match.
     /// Format: <state>:<regex>

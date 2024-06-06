@@ -41,6 +41,15 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
         }
     }
 
+    if matches!(res, BackendResult::Ok(_)) {
+        if let Some(state) = opts.on_success {
+            return Ok(resource.with_fixed_state(state).with_description(format!(
+                "Reachable. Overriding state to {} based on parameter",
+                state
+            )));
+        }
+    }
+
     let res = res.context("Failed to fetch URL")?;
 
     if let Some(ref expected_string) = opts.expected_string {
