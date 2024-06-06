@@ -189,7 +189,7 @@ fn read_cert(opts: &FileOpts) -> anyhow::Result<X509> {
         return Ok(cert);
     }
 
-    todo!()
+    Err(anyhow::anyhow!("failed to parse certificate"))
 }
 
 fn to_certificate_info(cert: &X509) -> CertificateInfo {
