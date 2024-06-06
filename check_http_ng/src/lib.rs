@@ -60,8 +60,7 @@ pub struct Opts {
     #[clap(long = "expect-string")]
     pub expected_string: Option<String>,
 
-    /// If defined it will be an "ok" service state if a connection error occurs. It will be the
-    /// given state if no error occurs.
+    /// If defined and a connection error occurs, the state will be set to the given state
     #[clap(long = "on-error")]
     pub on_error: Option<ServiceState>,
 
@@ -251,6 +250,7 @@ mod backend_curl {
             if error_message.contains("Timeout was reached")
                 || error_message.contains("Connection time-out")
                 || error_message.contains("SSL connection timeout")
+                || error_message.contains("Couldn't connect to server")
             {
                 return Err(BackendFetchError::NotReachable);
             } else {
@@ -306,7 +306,7 @@ mod backend_reqwest {
         let resp = match resp {
             Ok(resp) => resp,
             Err(err) => {
-                if err.is_timeout() {
+                if err.is_timeout() || err.is_connect() {
                     return Err(BackendFetchError::NotReachable);
                 } else {
                     return Err(BackendFetchError::Other(
