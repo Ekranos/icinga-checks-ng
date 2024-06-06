@@ -2,7 +2,7 @@ use anyhow::Context;
 use check_http_ng::{BackendFetchError, BackendResult, Opts};
 use clap::Parser;
 use futures::TryFutureExt;
-use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, TriggerIfValue};
+use nagiosplugin::{safe_run, CheckResult, Metric, Resource, ServiceState, TriggerIfValue, Unit};
 
 fn main() {
     let opts: Opts = Opts::parse();
@@ -77,7 +77,11 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
         }
     }
 
-    resource.push_result(Metric::new("size", res.body.len()));
+    resource.push_result(
+        Metric::new("size", res.body.len())
+            .with_minimum(0)
+            .with_unit(Unit::Bytes),
+    );
 
     resource.push_result(
         Metric::new("time", res.time.as_millis() as u64)
@@ -86,7 +90,8 @@ async fn check_http_ng(opts: Opts) -> anyhow::Result<Resource> {
                 (*opts.timeout_critical).as_millis() as u64,
                 TriggerIfValue::Greater,
             )
-            .with_minimum(0),
+            .with_minimum(0)
+            .with_unit(Unit::Milliseconds),
     );
 
     if res.status != opts.expect_status {
